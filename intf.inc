@@ -1,5 +1,7 @@
 .DATA
-    separador DB '----------------------------------------', 0DH, 0AH, '$' ; Separador para mejorar la legibilidad
+    ; Mensajes de texto
+    separador DB 0DH, 0AH ; Separador para mejorar la legibilidad
+              DB '----------------------------------------', 0DH, 0AH, '$'
     mensaje_inicio DB 'Bienvenido al programa ConverTec', 0DH, 0AH, '$' ; Mensaje de bienvenida
     menu_principal DB 'Por favor indique que tipo de conversion desea realizar:', 0DH, 0AH, '$' ; Mensaje de menu principal
     opciones_conversion DB 'Presione:', 0DH, 0AH
@@ -22,6 +24,9 @@
                         DB '17. Kilos a Libras', 0DH, 0AH
                         DB '18. Kilos a Toneladas', 0DH, 0AH, '$'
     mensaje_final DB 'Gracias por usar ConverTec', 0DH, 0AH, '$' ; Mensaje de despedida
+
+    ; Variables
+    entrada DB ? ; Variable para almacenar la entrada del usuario
 
 .CODE
 
@@ -115,3 +120,24 @@ mostrar_despedida PROC far
 
     RET          ; Retornar al llamador
 mostrar_despedida ENDP
+
+
+; ==============================================
+; Procedimiento: capturar_entrada
+; Descripción : Captura la entrada del usuario.
+; Parámetros  : Ninguno
+; Registros modificados: AX
+; ==============================================
+
+capturar_entrada PROC far
+    PUSH AX    ; Guardar el valor original de AX en la pila
+
+    MOV AH, 01H ; Leer un carácter desde la entrada estándar
+    INT 21H     ; Llamar a la interrupción para leer un carácter
+
+    MOV entrada, AL ; Guardar el carácter leído en la variable entrada
+
+    POP AX    ; Restaurar el valor original de AX
+
+    RET      ; Retornar al llamador
+capturar_entrada ENDP
