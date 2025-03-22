@@ -24,6 +24,7 @@
                         DB '17. Kilos a Libras', 0DH, 0AH
                         DB '18. Kilos a Toneladas', 0DH, 0AH, '$'
     mensaje_entrada DB 'Por favor ingrese el valor a convertir:', 0DH, 0AH, '$' ; Mensaje de entrada
+    mensaje_resultado DB 'El resultado es: ', '$' ; Mensaje de resultado
     menu_secundario DB 'Porfavor presione: ', 0DH, 0AH ; Mensaje de menu secundario
                     DB '1. Para continuar', 0DH, 0AH
                     DB '2. Para salir', 0DH, 0AH, '$' 
@@ -36,6 +37,8 @@
 
     ; Separador con salto de línea
     nueva_linea DB 0DH, 0AH, '$'
+
+
 
 .CODE
 
@@ -200,3 +203,84 @@ capturar_entrada PROC far
 
     RET      ; Retornar al llamador
 capturar_entrada ENDP
+
+
+; ==============================================
+; Procedimiento: mostrar_resultado
+; Descripción : Muestra el resultado de la conversión.
+; Parámetros  : Ninguno
+; Registros modificados: AX, DX
+; ==============================================
+
+convertir_numero_a_cadena PROC far
+    ; Guardar registros
+    PUSH AX  
+    PUSH BX
+    PUSH CX
+    PUSH DX
+    PUSH SI
+
+    MOV SI, OFFSET buffer_entrada + 6  ; Posición del punto decimal
+    MOV BYTE PTR [SI], '.'             ; Colocar punto decimal
+    MOV CX, 2                           ; Contador para los decimales
+
+convertir_decimales:
+    MOV DX, 0               ; Limpiar DX para división
+    MOV BX, 10              ; Divisor
+    DIV BX                  ; AX / 10 -> AL tiene el cociente, DL el residuo
+    ADD DL, '0'             ; Convertir residuo a ASCII
+    DEC SI
+    MOV [SI], DL            ; Guardar el dígito
+    LOOP convertir_decimales
+
+    ; Convertir parte entera
+    MOV CX, 5               ; Máximo de 5 dígitos
+convertir_enteros:
+    MOV DX, 0
+    MOV BX, 10
+    DIV BX
+    ADD DL, '0'
+    DEC SI
+    MOV [SI], DL
+    LOOP convertir_enteros
+
+    POP SI  ; Restaurar registros
+    POP DX
+    POP CX
+    POP BX
+    POP AX
+    RET     
+convertir_numero_a_cadena ENDP
+
+
+; ==============================================
+; Procedimiento: mostrar_resultado
+; Descripción : Muestra el resultado de la conversión.
+; Parámetros  : Ninguno
+; Registros modificados: AX, DX
+; ==============================================
+
+mostrar_resultado PROC far
+    PUSH AX
+
+    ; Llamar a la función de conversión
+    CALL convertir_numero_a_cadena
+
+    ; Mostrar el mensaje "El resultado es: "
+    MOV DX, OFFSET mensaje_resultado
+    MOV AH, 09H
+    INT 21H
+
+    ; Mostrar el número convertido
+    MOV DX, OFFSET buffer_entrada
+    MOV AH, 09H
+    INT 21H
+
+    ; Imprimir un salto de línea
+    MOV DX, OFFSET nueva_linea
+    MOV AH, 09H
+    INT 21H
+
+    POP AX
+    RET     
+mostrar_resultado ENDP
