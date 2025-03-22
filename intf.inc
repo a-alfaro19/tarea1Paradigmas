@@ -23,10 +23,19 @@
                         DB '16. Kilos a Onzas', 0DH, 0AH
                         DB '17. Kilos a Libras', 0DH, 0AH
                         DB '18. Kilos a Toneladas', 0DH, 0AH, '$'
+    mensaje_entrada DB 'Por favor ingrese el valor a convertir:', 0DH, 0AH, '$' ; Mensaje de entrada
+    menu_secundario DB 'Porfavor presione: ', 0DH, 0AH ; Mensaje de menu secundario
+                    DB '1. Para continuar', 0DH, 0AH
+                    DB '2. Para salir', 0DH, 0AH, '$' 
     mensaje_final DB 'Gracias por usar ConverTec', 0DH, 0AH, '$' ; Mensaje de despedida
 
     ; Variables
-    entrada DB ? ; Variable para almacenar la entrada del usuario
+    buffer_entrada DB 9 ; Tamaño del buffer de entrada
+                   DB ? ; Número de caracteres leídos
+                   DB 9 DUP(?) ; Espacio para almacenar la entrada del usuario
+
+    ; Separador con salto de línea
+    nueva_linea DB 0DH, 0AH, '$'
 
 .CODE
 
@@ -101,6 +110,50 @@ mostrar_menu ENDP
 
 
 ; ==============================================
+; Procedimiento: mostrar_entrada
+; Descripción : Imprime un mensaje de entrada en pantalla.
+; Parámetros  : Ninguno
+; Registros modificados: AX, DX
+; ==============================================
+
+mostrar_entrada PROC far
+    PUSH DX      ; Guardamos el valor original de DX en la pila
+    PUSH AX      ; Guardamos el valor original de AX en la pila
+
+    MOV DX, OFFSET mensaje_entrada  ; Cargar la dirección del mensaje en DX
+    MOV AH, 09H                    ; Función DOS 09H: imprimir cadena de texto
+    INT 21H                         ; Llamar a la interrupción para mostrar el mensaje
+
+    POP AX       ; Restauramos el valor original de AX
+    POP DX       ; Restauramos el valor original de DX
+
+    RET          ; Retornar al llamador
+mostrar_entrada ENDP
+
+
+; ==============================================
+; Procedimiento: mostrar_menu_secundario
+; Descripción : Imprime un menú secundario en pantalla.
+; Parámetros  : Ninguno
+; Registros modificados: AX, DX
+; ==============================================
+
+mostrar_menu_secundario PROC far
+    PUSH DX      ; Guardamos el valor original de DX en la pila
+    PUSH AX      ; Guardamos el valor original de AX en la pila
+
+    MOV DX, OFFSET menu_secundario  ; Cargar la dirección del mensaje en DX
+    MOV AH, 09H                    ; Función DOS 09H: imprimir cadena de texto
+    INT 21H                         ; Llamar a la interrupción para mostrar el mensaje
+
+    POP AX       ; Restauramos el valor original de AX
+    POP DX       ; Restauramos el valor original de DX
+
+    RET          ; Retornar al llamador
+mostrar_menu_secundario ENDP
+
+
+; ==============================================
 ; Procedimiento: mostrar_despedida
 ; Descripción : Imprime un mensaje de despedida en pantalla.
 ; Parámetros  : Ninguno
@@ -131,12 +184,18 @@ mostrar_despedida ENDP
 
 capturar_entrada PROC far
     PUSH AX    ; Guardar el valor original de AX en la pila
+    PUSH DX    ; Guardar el valor original de DX en la pila
 
-    MOV AH, 01H ; Leer un carácter desde la entrada estándar
+    MOV DX, OFFSET buffer_entrada ; Cargar la dirección del buffer de entrada en DX
+    MOV AH, 0AH ; Función DOS 0AH: leer una cadena de texto
     INT 21H     ; Llamar a la interrupción para leer un carácter
 
-    MOV entrada, AL ; Guardar el carácter leído en la variable entrada
+    ; Agregar un salto de línea después de la entrada
+    MOV DX, OFFSET nueva_linea ; Apuntar al mensaje de salto de línea
+    MOV AH, 09H   ; Función DOS 09H: imprimir cadena de texto
+    INT 21H       ; Llamar a la interrupción para mostrar el mensaje
 
+    POP DX    ; Restaurar el valor original de DX
     POP AX    ; Restaurar el valor original de AX
 
     RET      ; Retornar al llamador
