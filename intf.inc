@@ -1,7 +1,39 @@
 .DATA
+    ; ==============================================
+    ; Constantes
+    ; ==============================================
+    BUFFER_SIZE EQU 12 ; Tamaño del buffer de entrada/salida
+    MAX_ENTEROS EQU 4 ; Máximo de dígitos enteros permitidos
+    MAX_DECIMALES EQU 2 ; Máximo de decimales permitidos
+    ESPACIADOR DB ' $' ; Espaciador
+    SALTO_LINEA DB 0DH, 0AH, '$' ; Salto de línea
+    SEPARADOR DB '----------------------------------------', 0DH, 0AH, '$' ; Separador
+    ; Tabla de unidades
+    tabla_unidades DB 'Celsius', 0DH, 0AH, '$'       ; 1. Fahrenheit a Celsius
+                DB 'Kelvin', 0DH, 0AH, '$'           ; 2. Celsius a Kelvin
+                DB 'Celsius', 0DH, 0AH, '$'          ; 3. Kelvin a Celsius
+                DB 'Kelvin', 0DH, 0AH, '$'           ; 4. Fahrenheit a Kelvin
+                DB 'Centimetros', 0DH, 0AH, '$'      ; 5. Pulgadas a Centimetros
+                DB 'Centimetros', 0DH, 0AH, '$'      ; 6. Pies a Centimetros
+                DB 'Centimetros', 0DH, 0AH, '$'      ; 7. Yardas a Centimetros
+                DB 'Kilometros', 0DH, 0AH, '$'       ; 8. Millas a Kilometros
+                DB 'Pulgadas', 0DH, 0AH, '$'         ; 9. Centimetros a Pulgadas
+                DB 'Pies', 0DH, 0AH, '$'             ; 10. Centimetros a Pies
+                DB 'Yardas', 0DH, 0AH, '$'           ; 11. Centimetros a Yardas
+                DB 'Millas', 0DH, 0AH, '$'           ; 12. Kilometros a Millas
+                DB 'Kilos', 0DH, 0AH, '$'            ; 13. Onzas a Kilos
+                DB 'Kilos', 0DH, 0AH, '$'            ; 14. Libras a Kilos
+                DB 'Kilos', 0DH, 0AH, '$'            ; 15. Toneladas a Kilos
+                DB 'Onzas', 0DH, 0AH, '$'            ; 16. Kilos a Onzas
+                DB 'Libras', 0DH, 0AH, '$'           ; 17. Kilos a Libras
+                DB 'Toneladas', 0DH, 0AH, '$'        ; 18. Kilos a Toneladas
+
+
+    ; ==============================================
     ; Mensajes de texto
-    mensaje_inicio DB 'Bienvenido al programa ConverTec', 0DH, 0AH, '$' ; Mensaje de bienvenida
-    menu_principal DB 'Por favor indique que tipo de conversion desea realizar:', 0DH, 0AH ; Mensaje de menu principal
+    ; ==============================================
+    mensaje_inicio DB 'Bienvenido al programa ConverTec', 0DH, 0AH, '$'                     ; Mensaje de bienvenida
+    menu_principal DB 'Por favor indique que tipo de conversion desea realizar:', 0DH, 0AH  ; Mensaje de menu principal
                    DB 'Presione:', 0DH, 0AH
                    DB '1.  Fahrenheit a Celsius', 0DH, 0AH
                    DB '2.  Celsius a Kelvin', 0DH, 0AH
@@ -21,46 +53,23 @@
                    DB '16. Kilos a Onzas', 0DH, 0AH
                    DB '17. Kilos a Libras', 0DH, 0AH
                    DB '18. Kilos a Toneladas', 0DH, 0AH, '$'
-    mensaje_entrada DB 'Por favor ingrese el valor a convertir:', 0DH, 0AH, '$' ; Mensaje de entrada
-    mensaje_resultado DB 'El resultado es: ', '$' ; Mensaje de resultado
-    menu_secundario DB 'Porfavor presione: ', 0DH, 0AH ; Mensaje de menu secundario
+    mensaje_entrada DB 'Por favor ingrese el valor a convertir:', 0DH, 0AH, '$'             ; Mensaje de entrada
+    mensaje_resultado DB 'El resultado es:', '$'                                            ; Mensaje de resultado
+    menu_secundario DB 'Porfavor presione: ', 0DH, 0AH                                      ; Mensaje de menu secundario
                     DB '1. Para continuar', 0DH, 0AH
                     DB '2. Para salir', 0DH, 0AH, '$' 
-    mensaje_final DB 'Gracias por usar ConverTec', 0DH, 0AH, '$' ; Mensaje de despedida
+    mensaje_final DB 'Gracias por usar ConverTec', 0DH, 0AH, '$'                            ; Mensaje de despedida
+    mensaje_error DB 'Error: Opción inválida. Por favor intente de nuevo.', 0DH, 0AH, '$'   ; Mensaje de error
 
-    ; Tabla de unidades
-    tabla_unidades DB 'Celsius', 0DH, 0AH, '$'          ; 1. Fahrenheit a Celsius
-                   DB 'Kelvin', 0DH, 0AH, '$'           ; 2. Celsius a Kelvin
-                   DB 'Celsius', 0DH, 0AH, '$'          ; 3. Kelvin a Celsius
-                   DB 'Kelvin', 0DH, 0AH, '$'           ; 4. Fahrenheit a Kelvin
-                   DB 'Centimetros', 0DH, 0AH, '$'      ; 5. Pulgadas a Centimetros
-                   DB 'Centimetros', 0DH, 0AH, '$'      ; 6. Pies a Centimetros
-                   DB 'Centimetros', 0DH, 0AH, '$'      ; 7. Yardas a Centimetros
-                   DB 'Kilometros', 0DH, 0AH, '$'       ; 8. Millas a Kilometros
-                   DB 'Pulgadas', 0DH, 0AH, '$'         ; 9. Centimetros a Pulgadas
-                   DB 'Pies', 0DH, 0AH, '$'             ; 10. Centimetros a Pies
-                   DB 'Yardas', 0DH, 0AH, '$'           ; 11. Centimetros a Yardas
-                   DB 'Millas', 0DH, 0AH, '$'           ; 12. Kilometros a Millas
-                   DB 'Kilos', 0DH, 0AH, '$'            ; 13. Onzas a Kilos
-                   DB 'Kilos', 0DH, 0AH, '$'            ; 14. Libras a Kilos
-                   DB 'Kilos', 0DH, 0AH, '$'            ; 15. Toneladas a Kilos
-                   DB 'Onzas', 0DH, 0AH, '$'            ; 16. Kilos a Onzas
-                   DB 'Libras', 0DH, 0AH, '$'           ; 17. Kilos a Libras
-                   DB 'Toneladas', 0DH, 0AH, '$'        ; 18. Kilos a Toneladas
-
+    ; ==============================================
     ; Variables
-    unidades DB '$'
-    buffer_entrada DB 9 ; Tamaño del buffer de entrada
-                   DB ? ; Número de caracteres leídos
-                   DB 9 DUP(?) ; Espacio para almacenar la entrada del usuario
-    opcion_seleccionada DB ? ; Opción seleccionada por el usuario
-
-    ; Separador con salto de línea
-    nueva_linea DB 0DH, 0AH, '$' ; Salto de línea
-    separador DB 0DH, 0AH ; Separador para mejorar la legibilidad
-              DB '----------------------------------------', 0DH, 0AH, '$'
-    espacio DB ' $' ; Cadena que contiene un espacio
-
+    ; ==============================================
+    parte_entera DW ?               ; Parte entera del número
+    parte_decimal DW ?              ; Parte decimal del número
+    buffer_entrada DB 12 DUP(?)     ; Espacio para almacenar la entrada del usuario
+    buffer_salida DB 12 DUP(?)      ; Espacio para almacenar la salida
+    opcion_seleccionada DB ?        ; Opción seleccionada por el usuario
+    unidades DB '$'                 ; Unidades de medida
 
 
 .CODE
@@ -71,11 +80,37 @@
 ; Parámetros  : MENSAJE (cadena de texto)
 ; Registros modificados: AX, DX
 ; ==============================================
-
 IMPRIMIR MACRO MENSAJE
     MOV DX, OFFSET MENSAJE
     MOV AH, 09H
     INT 21H
+ENDM
+
+
+; ==============================================
+; Macro: limpiar_buffer
+; Descripción : Limpia el buffer de entrada.
+; Parámetros  : BUFFER (dirección del buffer), SIZE (tamaño del buffer)
+; Registros modificados: CX, DI
+; ==============================================
+LIMPIAR_BUFFER MACRO BUFFER, SIZE
+    LOCAL limpiar_loop              ; Etiqueta para el bucle de limpieza
+
+    ; Guardar registros
+    PUSH CX
+    PUSH DI
+
+    MOV CX, SIZE                    ; Tamaño del buffer
+    MOV DI, OFFSET BUFFER           ; Apuntar al inicio del buffer
+
+limpiar_loop:
+    MOV BYTE PTR [DI], 0            ; Limpiar byte actual
+    INC DI                          ; Mover al siguiente byte
+    LOOP limpiar_loop               ; Repetir hasta que CX sea 0
+
+    ; Restaurar registros
+    POP DI
+    POP CX
 ENDM
 
 
@@ -85,86 +120,97 @@ ENDM
 ; Parámetros  : Ninguno
 ; Registros modificados: AX
 ; ==============================================
-
 capturar_entrada PROC far
-    PUSH AX    ; Guardar el valor original de AX en la pila
-    PUSH DX    ; Guardar el valor original de DX en la pila
+    ; Limpiar el buffer de entrada
+    LIMPIAR_BUFFER buffer_entrada, BUFFER_SIZE
 
-    MOV DX, OFFSET buffer_entrada ; Cargar la dirección del buffer de entrada en DX
-    MOV AH, 0AH ; Función DOS 0AH: leer una cadena de texto
-    INT 21H     ; Llamar a la interrupción para leer un carácter
+    ; Inicializar el buffer de entrada
+    MOV BYTE PTR buffer_entrada, 11     ; Tamaño máximo permitido (11 caracteres)
+    MOV BYTE PTR buffer_entrada + 1, 0  ; Número de caracteres ingresados inicialmente en 0
 
-    IMPRIMIR nueva_linea ; Agregar un salto de línea después de la entrada
+    MOV DX, OFFSET buffer_entrada       ; Cargar la dirección del buffer de entrada en DX
+    MOV AH, 0AH                         ; Función DOS 0AH: leer una cadena de texto
+    INT 21H                             ; Llamar a la interrupción para leer un carácter
 
-    POP DX    ; Restaurar el valor original de DX
-    POP AX    ; Restaurar el valor original de AX
+    IMPRIMIR SALTO_LINEA                ; Agregar un salto de línea después de la entrada
 
-    RET      ; Retornar al llamador
+    RET    
 capturar_entrada ENDP
 
-
+; ==============================================
+; Procedimiento: guardar_opcion_seleccionada
+; Descripción : Guarda la opción seleccionada por el usuario.
+; Parámetros  : Ninguno
+; Registros modificados: AX, DX
+; ==============================================
 guardar_opcion_seleccionada PROC far
     PUSH AX
-    PUSH DX
 
     MOV AL, buffer_entrada[2]
     SUB AL, '0'
     MOV opcion_seleccionada, AL
 
-    POP DX
     POP AX
     RET
 guardar_opcion_seleccionada ENDP
 
 
 ; ==============================================
-; Procedimiento: mostrar_resultado
-; Descripción : Muestra el resultado de la conversión.
-; Parámetros  : Ninguno
-; Registros modificados: AX, DX
+; Procedimiento: convertir_numero_a_cadena
+; Descripción : Convierte un número a una cadena de texto.
+; Parámetros  : Ninguno (parte_entera y parte_decimal deben estar inicializados)
+; Registros modificados: AX, BX, CX, DX, SI
 ; ==============================================
-
 convertir_numero_a_cadena PROC far
     ; Guardar registros
-    PUSH AX  
-    PUSH BX
     PUSH CX
     PUSH DX
     PUSH SI
 
-    MOV SI, OFFSET buffer_entrada + 6  ; Posición del punto decimal
-    
-    MOV BYTE PTR [SI], '.'             ; Colocar punto decimal
-    MOV CX, 2                           ; Contador para los decimales
+    ; Apuntar al final del buffer de salida
+    MOV SI, OFFSET buffer_salida + BUFFER_SIZE - 1
+    MOV BYTE PTR [SI], '$'                          ; Agregar el delimitador '$' al final de la cadena
+    DEC SI                                          ; Mover el puntero a la izquierda
 
-convertir_decimales:
-    MOV DX, 0               ; Limpiar DX para división
-    MOV BX, 10              ; Divisor
-    DIV BX                  ; AX / 10 -> AL tiene el cociente, DL el residuo
-    ADD DL, '0'             ; Convertir residuo a ASCII
+    ; Convertir la parte decimal (parte decimal en DX)
+    MOV AX, parte_decimal                           ; Mover la parte decimal a AX
+    MOV CX, MAX_DECIMALES                           ; Máximo de 2 decimales
+convertir_parte_decimal:
+    XOR DX, DX                                      ; Limpiar DX
+    MOV BX, 10                                      ; Divisor
+    DIV BX                                          ; AX / BX -> AX = cociente, DX = residuo
+    ADD DL, '0'                                     ; Convertir residuo a ASCII
+    MOV [SI], DL                                    ; Guardar el dígito en el buffer
+    DEC SI                                          ; Mover el puntero hacia atrás
+    CMP AX, 0                                       ; Verificar si se ha convertido toda la parte decimal
+    LOOP convertir_parte_decimal
+
+    ; Agregar el punto decimal
+    MOV BYTE PTR [SI], '.'                          ; Colocar el punto decimal
     DEC SI
-    MOV [SI], DL            ; Guardar el dígito
-    LOOP convertir_decimales
 
-    ; Convertir parte entera
-    MOV CX, 5               ; Máximo de 5 dígitos
-convertir_enteros:
-    MOV DX, 0
-    MOV BX, 10
-    DIV BX
-    ADD DL, '0'
-    DEC SI
-    MOV [SI], DL
-    LOOP convertir_enteros
+    ; Convertir la parte entera (parte entera en AX)
+    MOV AX, parte_entera                            ; Mover la parte entera a AX
+    MOV CX, MAX_ENTEROS                             ; Máximo de 4 dígitos enteros
+convertir_parte_entera:
+    XOR DX, DX                                      ; Limpiar DX
+    MOV BX, 10                                      ; Divisor
+    DIV BX                                          ; AX / BX -> AX = cociente, DX = residuo
+    ADD DL, '0'                                     ; Convertir residuo a ASCII
+    MOV [SI], DL                                    ; Guardar el dígito en el buffer
+    DEC SI                                          ; Mover el puntero hacia atrás
+    CMP AX, 0                                       ; ¿Quedan más dígitos?
+    JNE convertir_parte_entera                      ; Si sí, continuar
 
-    ; Agregar el delimitador '$' al final de la cadena
-    MOV BYTE PTR [buffer_entrada + 7], '$'
 
-    POP SI  ; Restaurar registros
+    ; Ajustar el puntero SI al inicio del número convertido
+    INC SI                                          ; Mover al inicio del número
+
+    ; Restaurar registros
+    POP SI
     POP DX
     POP CX
-    POP BX
-    POP AX
+
     RET     
 convertir_numero_a_cadena ENDP
 
@@ -175,9 +221,7 @@ convertir_numero_a_cadena ENDP
 ; Parámetros  : Ninguno
 ; Registros modificados: AX, BX, SI
 ; ==============================================
-
 obtener_unidades PROC far
-    PUSH AX
     PUSH BX
     PUSH SI
 
@@ -200,13 +244,12 @@ buscar_unidades:
 
 imprimir_unidades:
     ; Imprimir el nombre de las unidades
-    MOV DX, SI  ; Cargar la dirección apuntada por SI en DX
-    MOV AH, 09H ; Función DOS para imprimir cadena
-    INT 21H     ; Llamar a la interrupción
+    MOV DX, SI      ; Cargar la dirección apuntada por SI en DX
+    MOV AH, 09H     ; Función DOS para imprimir cadena
+    INT 21H         ; Llamar a la interrupción
 
     POP SI
     POP BX
-    POP AX
     RET
 obtener_unidades ENDP
 
@@ -217,8 +260,10 @@ obtener_unidades ENDP
 ; Parámetros  : Ninguno
 ; Registros modificados: AX, DX
 ; ==============================================
-
 mostrar_resultado PROC far
+    ; Limpiar el buffer de salida
+    LIMPIAR_BUFFER buffer_salida, BUFFER_SIZE
+
     ; Llamar a la función de conversión
     CALL convertir_numero_a_cadena
 
@@ -226,16 +271,16 @@ mostrar_resultado PROC far
     IMPRIMIR mensaje_resultado
 
     ; Mostrar el número convertido
-    IMPRIMIR buffer_entrada
+    IMPRIMIR buffer_salida
 
     ; Imprimir espacio
-    IMPRIMIR espacio
+    IMPRIMIR ESPACIADOR
 
     ; Mostrar las unidades
     CALL obtener_unidades
 
     ; Imprimir salto de línea
-    IMPRIMIR nueva_linea
+    IMPRIMIR SALTO_LINEA
 
     RET     
 mostrar_resultado ENDP
