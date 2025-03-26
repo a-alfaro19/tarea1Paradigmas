@@ -13,7 +13,7 @@ ends
 code segment
 start:
     ; Inicializar valores
-    MOV AX, -999      ; Cargar valor en AX
+    MOV AX, 179      ; Cargar valor en AX
     MOV BX, 99        ; Cargar valor en BX
     MOV CX, 100       ; Cargar 100 en CX
 
@@ -28,38 +28,40 @@ start:
     SUB AX, 3200     ; Restar la parte baja
     SBB DX, 0         ; Ajustar parte alta 
 
-    ; Multiplicar por 5 (DX:AX * 5) 
-    MOV CX, 5
-    CALL Mul32x16     ; Llamar a rutina de multiplicación 32x16 bits
     
     ; --- Manejo del signo antes de la división ---
-    PUSH DX          ; Guardar DX (parte alta) para verificar signo después
+    PUSH DX          ; Guardar DX (parte alta) para verificar signo despues
     
-    ; Verificar si el número es negativo (comprobar bit de signo en DX)
+    ; Verificar si el numero es negativo (comprobar bit de signo en DX)
     TEST DX, DX
-    JNS DividirPositivo  ; Si no es negativo (SF=0), saltar a división
+    JNS Positivo  ; Si no es negativo (SF=0), saltar a division
     
     ; Si es negativo, convertir a positivo (complemento a 2)
-    NEG DX
+    XOR DX, 0FFFFh
     NEG AX
-    SBB DX, 0        ; Ajustar DX si hubo acarreo en la negación de AX
     
-    DividirPositivo:
+    Positivo:
+    
+    ; Multiplicar por 5 (DX:AX * 5) 
+    MOV CX, 5
+    CALL Mul32x16     ; Llamar a rutina de multiplicacion 32x16 bits
+    
     ; Dividir entre 9 (DX:AX / 9)
     MOV CX, 9 
-    CALL Div32x16     ; Ahora dividimos un número positivo
+    CALL Div32x16     ; Ahora dividimos un numero positivo
     
     ; Recuperar el signo original
     POP BX           ; Recuperar DX original para verificar el signo
     
-    ; Verificar si el número original era negativo
+    ; Verificar si el numero original era negativo
     TEST BX, BX
     JNS SumarFinal   ; Si no era negativo, saltar a la suma final
     
     ; Si era negativo, negar el resultado
-    NEG DX
+    XOR DX, 0FFFFh
     NEG AX
-    SBB DX, 0        ; Ajustar DX si hubo acarreo en la negación de AX
+
+
     
     SumarFinal:
     ; Sumar 27315 (DX:AX + 27315)
@@ -78,7 +80,7 @@ start:
 
 ; ------------------------------------------------------
 ; Rutina: Mul32x16
-; Multiplica un número 32-bit (DX:AX) por un 16-bit (CX)
+; Multiplica un numero 32-bit (DX:AX) por un 16-bit (CX)
 ; Entrada:
 ;   DX:AX = multiplicando (32 bits)
 ;   CX    = multiplicador (16 bits)
@@ -100,18 +102,18 @@ Mul32x16 PROC
     
     ; 1. Multiplicar parte baja (SI * CX)
     MOV AX, CX
-    XOR DX, DX
+    MOV DX, 0
     MUL SI      ; DX:AX = CX * SI (parte baja)
     MOV BX, AX  ; BX = resultado bajo
     MOV SI, DX  ; SI = resultado alto
     
     ; 2. Multiplicar parte alta (DI * CX)
     MOV AX, CX
-    XOR DX, DX
+    MOV DX, 0
     MUL DI      ; DX:AX = CX * DI (parte alta)
     
     ; 3. Sumar componentes cruzados
-    ADD SI, AX  ; Sumar parte baja de la multiplicación alta
+    ADD SI, AX  ; Sumar parte baja de la multiplicacion alta
     ADC DX, 0   ; Ajustar acarreo
     
     ; 4. Preparar resultado final
@@ -126,7 +128,7 @@ Mul32x16 PROC
 Mul32x16 ENDP
 ; ------------------------------------------------------
 ; Rutina: Div32x16
-; Divide un número 32-bit (DX:AX) por un 16-bit (CX)
+; Divide un numero 32-bit (DX:AX) por un 16-bit (CX)
 ; Entrada:
 ;   DX:AX = dividendo (32 bits)
 ;   CX    = divisor (16 bits, no cero)
@@ -139,7 +141,7 @@ Div32x16 PROC
     PUSH SI           ; Guardar registros que usaremos
     PUSH DI
     
-    ; 1. Verificar división por cero
+    ; 1. Verificar division por cero
     TEST CX, CX
     JZ DivisionError  ; Saltar si divisor es cero
     
@@ -149,7 +151,7 @@ Div32x16 PROC
     ; 3. Dividir parte alta (DX)
     MOV BX, AX        ; Guardar parte baja temporalmente
     MOV AX, DX        ; AX = parte alta
-    XOR DX, DX        ; DX = 0
+    MOV DX, 0         ; DX = 0
     DIV SI            ; AX = cociente parte alta, DX = resto
     
     ; 4. Guardar cociente parcial (parte alta)
@@ -157,7 +159,7 @@ Div32x16 PROC
     
     ; 5. Dividir parte baja (BX) con resto anterior (DX)
     MOV AX, BX        ; Recuperar parte baja
-    ; DX ya contiene el resto de la división anterior
+    ; DX ya contiene el resto de la division anterior
     DIV SI            ; AX = cociente parte baja, DX = resto
     
     ; 6. Preparar resultado final
