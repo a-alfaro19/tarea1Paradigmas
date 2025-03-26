@@ -13,20 +13,30 @@ ends
 code segment
 start:
     ; Inicializar valores
-    MOV AX, 179      ; Cargar valor en AX
+    MOV AX, 9999      ; Cargar valor en AX
     MOV BX, 99        ; Cargar valor en BX
     MOV CX, 100       ; Cargar 100 en CX
 
     ; Multiplicar AX (9999) por CX (100) 
     IMUL CX            ; AX = parte baja, DX = parte alta
     
-    ; Sumar BX al resultado (DX:AX + BX) 
-    ADD AX, BX        
-    ADC DX, 0         ; Ajustar parte alta si hay acarreo  
-
+    ; Sumar BX al resultado (DX:AX + BX) con manejo de signo
+    TEST AX, AX          ; Verificar el signo de AX
+    JNS sumar_bxf         ; Si AX es positivo, saltar a sumar
+    
+    ; Si AX es negativo, restar BX
+    SUB AX, BX           ; Restar BX 
+    SBB DX, 0            ; Ajustar parte alta si hay borrow
+    JMP continuar_restaf  ; Saltar a la resta de 27315
+    
+    sumar_bxf:
+    ADD AX, BX           ; Sumar BX a la parte baja
+    ADC DX, 0            ; Ajustar parte alta si hay acarreo 
+    
+    continuar_restaf:
     ; Restar 3200 (DX:AX - 3200) 
     SUB AX, 3200     ; Restar la parte baja
-    SBB DX, 0         ; Ajustar parte alta 
+    SBB DX, 0         ; Ajustar parte alta  
 
     
     ; --- Manejo del signo antes de la división ---
@@ -74,7 +84,7 @@ start:
 
 
     ; Terminar programa
-    ;MOV AX, 4c00h
+    MOV AX, 4c00h
     INT 21h
              
 
