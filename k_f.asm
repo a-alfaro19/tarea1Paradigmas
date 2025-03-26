@@ -40,6 +40,7 @@ start:
     MOV WORD PTR [resultado+2], DX
 
     ; Terminar programa
+    ;MOV AX, 4c00h
     INT 21h
 
 ; ------------------------------------------------------
@@ -93,4 +94,4 @@ Mul32x16 ENDP
 
 ends
 
-end start ; set entry point and stop the assembler.
+end start
