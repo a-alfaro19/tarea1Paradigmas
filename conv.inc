@@ -1,142 +1,122 @@
-;------------------------------------------------------------
-; Procedimiento: celcius_a_farenheit
+; ============================================================================
+; Macro: CELCIUS_A_FARENHEIT
 ; Descripción: Convierte una temperatura en grados Celsius a Fahrenheit.
-; Parámetros de entrada:
-;   - AX: Temperatura en Celsius
-; Parámetros de salida:
-;   - AX: Temperatura en Fahrenheit
-;------------------------------------------------------------
-
-celcius_a_farenheit PROC far
-    MOV    BX, 9           ; Multiplicador para la conversión (C * 9)
-    MUL    BX             ; AX = C * 9 (Multiplicación con BX)
-
-    MOV    CX, 5           ; Divisor para la conversión (C * 9 / 5)
-    DIV    CX             ; AX = (C * 9) / 5
-
-    ADD    AX, 32         ; Sumar 32 para completar la conversión a Fahrenheit
-
-    RET                    ; Retorna el resultado en AX
-celcius_a_farenheit ENDP
+; Parámetros:
+;   - ENTRADA: Variable de entrada (temperatura en Celsius)
+;   - SALIDA: Variable de salida (temperatura en Fahrenheit)
+; ============================================================================
+CELCIUS_A_FARENHEIT MACRO ENTRADA, SALIDA
+    MOV AX, ENTRADA        ; Cargar la temperatura en Celsius
+    MOV BX, 9              ; Multiplicador para la conversión (C * 9)
+    MUL BX                 ; AX = C * 9 (Multiplicación con BX)
+    MOV CX, 5              ; Divisor para la conversión (C * 9 / 5)
+    DIV CX                 ; AX = (C * 9) / 5
+    ADD AX, 32             ; Sumar 32 para completar la conversión a Fahrenheit
+    MOV SALIDA, AX         ; Guardar el resultado en la variable de salida
+ENDM
 
 
-;------------------------------------------------------------
-; Procedimiento: farenheit_a_celcius
-; Descripción: Convierte una temperatura en grados Fahrenheit a Celsius.
-; Parámetros de entrada:
-;   - AX: Temperatura en Fahrenheit
-; Parámetros de salida:
-;   - AX: Temperatura en Celsius
-;------------------------------------------------------------
-
-fahrenheit_a_celcius PROC far
-    SUB    AX, 32         ; Restar 32 para completar la conversión a Celsius
-
-    MOV    BX, 9           ; Multiplicador para la conversión (F - 32)
-    MUL    BX             ; AX = (F - 32) * 9 (Multiplicación con BX)
-
-    MOV    CX, 5           ; Divisor para la conversión ((F - 32) * 9)
-    DIV    CX             ; AX = ((F - 32) * 9) / 5
-
-    RET                    ; Retorna el resultado en AX
-fahrenheit_a_celcius ENDP
+; ============================================================================
+; Macro: CELCIUS_A_FARENHEIT
+; Descripción: Convierte una temperatura en grados Celsius a Fahrenheit.
+; Parámetros:
+;   - ENTRADA: Variable de entrada (temperatura en Celsius)
+;   - SALIDA: Variable de salida (temperatura en Fahrenheit)
+; ============================================================================
+FARENHEIT_A_CELCIUS MACRO ENTRADA, SALIDA
+    MOV AX, ENTRADA        ; Cargar la temperatura en Fahrenheit
+    SUB AX, 32             ; Restar 32 para completar la conversión a Celsius
+    MOV BX, 9              ; Multiplicador para la conversión (F - 32)
+    MUL BX                 ; AX = (F - 32) * 9 (Multiplicación con BX)
+    MOV CX, 5              ; Divisor para la conversión ((F - 32) * 9)
+    DIV CX                 ; AX = ((F - 32) * 9) / 5
+    MOV SALIDA, AX         ; Guardar el resultado en la variable de salida
+ENDM
 
 
-;------------------------------------------------------------
-; Procedimiento: pulgadas_a_centimetros
+; ============================================================================
+; Macro: PULGADAS_A_CENTIMETROS
 ; Descripción: Convierte una longitud en pulgadas a centímetros.
-; Parámetros de entrada:
-;   - AX: Longitud en pulgadas
-; Parámetros de salida:
-;   - AX: Longitud en centímetros
-;------------------------------------------------------------
-
-pulgadas_a_centimetros PROC far
+; Parámetros:
+;   - ENTRADA: Variable de entrada (longitud en pulgadas)
+;   - SALIDA: Variable de salida (longitud en centímetros)
+; ============================================================================
+PULGADAS_A_CENTIMETROS MACRO ENTRADA, SALIDA
+    MOV AX, ENTRADA        ; Cargar la longitud en pulgadas
     MOV    BX, 254         ; Multiplicador para la conversión (P * 254)
-    MUL    BX             ; AX = P * 254 (Multiplicación con BX)
-
+    MUL    BX              ; AX = P * 254 (Multiplicación con BX)
     MOV    CX, 100         ; Divisor para la conversión (P * 254 / 100)
-    DIV    CX             ; AX = (P * 254) / 100
+    DIV    CX              ; AX = (P * 254) / 100
+    MOV SALIDA, AX         ; Guardar el resultado en la variable de salida
+ENDM
 
-    RET                    ; Retorna el resultado en AX
-pulgadas_a_centimetros ENDP
 
-
-;------------------------------------------------------------
-; Procedimiento: centimetros_a_pulgadas
+; ============================================================================
+; Macro: CENTIMETROS_A_PULGADAS
 ; Descripción: Convierte una longitud en centímetros a pulgadas.
-; Parámetros de entrada:
-;   - AX: Longitud en centímetros
-; Parámetros de salida:
-;   - AX: Longitud en pulgadas
-;------------------------------------------------------------
-
-centimetros_a_pulgadas PROC far
+; Parámetros:
+;   - ENTRADA: Variable de entrada (longitud en centímetros)
+;   - SALIDA: Variable de salida (longitud en pulgadas)
+; ============================================================================
+CENTIMETRO_A_PULGADAS MACRO ENTRADA, SALIDA
+    MOV AX, ENTRADA        ; Cargar la longitud en centimetros
     MOV    BX, 100         ; Multiplicador para la conversión (C * 100)
-    MUL    BX             ; AX = C * 100 (Multiplicación con BX)
+    MUL    BX              ; AX = C * 100 (Multiplicación con BX)
 
     MOV    CX, 254         ; Divisor para la conversión (C * 100 / 254)
-    DIV    CX             ; AX = (C * 100) / 254
+    DIV    CX              ; AX = (C * 100) / 254
+    MOV SALIDA, AX         ; Guardar el resultado en la variable de salida
+ENDM
 
-    RET                    ; Retorna el resultado en AX
-centimetros_a_pulgadas ENDP
 
-
-;------------------------------------------------------------
-; Procedimiento: millas_a_kilometros
+; ============================================================================
+; Macro: MILLAS_A_KILOMETROS
 ; Descripción: Convierte una distancia en millas a kilómetros.
-; Parámetros de entrada:
-;   - AX: Distancia en millas
-; Parámetros de salida:
-;   - AX: Distancia en kilómetros
-;------------------------------------------------------------
+; Parámetros:
+;  - ENTRADA: Variable de entrada (distancia en millas)
+;  - SALIDA: Variable de salida (distancia en kilómetros)
+; ============================================================================
+MILLAS_A_KILOMETROS MACRO ENTRADA, SALIDA
+    MOV AX, ENTRADA       ; Cargar la distancia en millas
+    MOV    BX, 161        ; Multiplicador para la conversión (M * 161)
+    MUL    BX             ; AX = M * 161 (Multiplicación con BX)
 
-millas_a_kilometros PROC far
-    MOV    BX, 160934        ; Multiplicador para la conversión (M * 160934)
-    MUL    BX             ; AX = M * 160934 (Multiplicación con BX)
-
-    MOV    CX, 100000        ; Divisor para la conversión (M * 1609 / 100000)
-    DIV    CX             ; AX = (M * 160934) / 100000
-
-    RET                    ; Retorna el resultado en AX
-millas_a_kilometros ENDP
+    MOV    CX, 100        ; Divisor para la conversión (M * 161 / 100)
+    DIV    CX             ; AX = (M * 161) / 100
+    MOV SALIDA, AX        ; Guardar el resultado en la variable de salida
+ENDM
 
 
-;------------------------------------------------------------
-; Procedimiento: onzas_a_kilogramos
+; ============================================================================
+; Macro: ONZAS_A_KILOGRAMOS
 ; Descripción: Convierte un peso en onzas a kilogramos.
-; Parámetros de entrada:
-;   - AX: Peso en onzas
-; Parámetros de salida:
-;   - AX: Peso en kilogramos
-;------------------------------------------------------------
-
-onzas_a_kilogramos PROC far
-    MOV    BX, 2835         ; Multiplicador para la conversión (O * 2835)
-    MUL    BX             ; AX = O * 2835 (Multiplicación con BX)
-
-    MOV    CX, 100000        ; Divisor para la conversión (O * 2835 / 100000)
-    DIV    CX             ; AX = (O * 2835) / 100000
-
-    RET                    ; Retorna el resultado en AX
-onzas_a_kilogramos ENDP
+; Parámetros:
+;  - ENTRADA: Variable de entrada (peso en onzas)
+;  - SALIDA: Variable de salida (peso en kilogramos)
+; ============================================================================
+ONZAS_A_KILOGRAMOS MACRO ENTRADA, SALIDA
+    MOV AX, ENTRADA        ; Cargar el peso en onzas
+    MOV    BX, 28          ; Multiplicador para la conversión (O * 28)
+    MUL    BX              ; AX = O * 28 (Multiplicación con BX)
+    MOV    CX, 1000        ; Divisor para la conversión (O * 28 / 1000)
+    DIV    CX              ; AX = (O * 28) / 1000
+    MOV SALIDA, AX         ; Guardar el resultado en la variable de salida
+ENDM
 
 
-;------------------------------------------------------------
-; Procedimiento: kilogramos_a_onzas
+; ============================================================================
+; Macro: KILOGRAMOS_A_ONZAS
 ; Descripción: Convierte un peso en kilogramos a onzas.
-; Parámetros de entrada:
-;   - AX: Peso en kilogramos
-; Parámetros de salida:
-;   - AX: Peso en onzas
-;------------------------------------------------------------
+; Parámetros:
+;  - ENTRADA: Variable de entrada (peso en kilogramos)
+;  - SALIDA: Variable de salida (peso en onzas)
+; ============================================================================
+KILOGRAMOS_A_ONZAS MACRO ENTRADA, SALIDA
+    MOV AX, ENTRADA        ; Cargar el peso en kilogramos
+    MOV    BX, 353         ; Multiplicador para la conversión (K * 353)
+    MUL    BX              ; AX = K * 353 (Multiplicación con BX)
 
-kilogramos_a_onzas PROC far
-    MOV    BX, 100000        ; Multiplicador para la conversión (K * 100000)
-    MUL    BX             ; AX = K * 100000 (Multiplicación con BX)
-
-    MOV    CX, 2835         ; Divisor para la conversión (K * 100000 / 2835)
-    DIV    CX             ; AX = (K * 100000) / 2835
-
-    RET                    ; Retorna el resultado en AX
-kilogramos_a_onzas ENDP
+    MOV    CX, 10          ; Divisor para la conversión (K * 353 / 10)
+    DIV    CX              ; AX = (K * 353) / 10
+    MOV SALIDA, AX         ; Guardar el resultado en la variable de salida
+ENDM
