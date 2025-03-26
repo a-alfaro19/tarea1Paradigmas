@@ -11,7 +11,14 @@ stack segment
 ends
 
 code segment
-start:
+start:    
+; ============================================================================
+; Macro: FAHRENHEIT_A_KELVIN
+; Descripcion: Convierte una temperatura en Fahrenheit a Kelvin.
+; Parametros:
+;  - ENTRADA: Variable de entrada (temperatura en Fahrenheit)
+;  - SALIDA: Variable de salida (temperatura en Kelvin)
+; ============================================================================
     ; Inicializar valores
     MOV AX, 9999      ; Cargar valor en AX
     MOV BX, 99        ; Cargar valor en BX
@@ -88,7 +95,7 @@ start:
     INT 21h
              
 
-; ------------------------------------------------------
+; ============================================================================
 ; Rutina: Mul32x16
 ; Multiplica un numero 32-bit (DX:AX) por un 16-bit (CX)
 ; Entrada:
@@ -97,7 +104,7 @@ start:
 ; Salida:
 ;   DX:AX = resultado (32 bits)
 ; Modifica: BX
-; ------------------------------------------------------
+; ============================================================================
 
 Mul32x16 PROC
     PUSH BP
@@ -136,7 +143,7 @@ Mul32x16 PROC
     POP BP
     RET
 Mul32x16 ENDP
-; ------------------------------------------------------
+; ============================================================================
 ; Rutina: Div32x16
 ; Divide un numero 32-bit (DX:AX) por un 16-bit (CX)
 ; Entrada:
@@ -146,7 +153,7 @@ Mul32x16 ENDP
 ;   DX:AX = cociente (DX=parte alta, AX=parte baja)
 ;   BX    = resto
 ; Modifica: BX
-; ------------------------------------------------------
+; ============================================================================
 Div32x16 PROC
     PUSH SI           ; Guardar registros que usaremos
     PUSH DI
