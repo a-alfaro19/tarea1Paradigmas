@@ -273,7 +273,7 @@ conv_pies_cm:
 conv_yard_cm:
     mov dx, valor_entrada_high
     mov ax, valor_entrada_low
-    ; Simular conversión
+    CALL YARDAS_A_CENTIMETROS
     mov resultado_h, dx
     mov resultado_l, ax
     jmp mostrar_resultado_long
@@ -305,7 +305,7 @@ conv_cm_pies:
 conv_cm_yard:
     mov dx, valor_entrada_high
     mov ax, valor_entrada_low
-    ; Simular conversión
+    CALL CENTIMETROS_A_YARDAS 
     mov resultado_h, dx
     mov resultado_l, ax
     jmp mostrar_resultado_long
@@ -313,7 +313,7 @@ conv_cm_yard:
 conv_km_millas:
     mov dx, valor_entrada_high
     mov ax, valor_entrada_low
-    ; Simular conversión
+    CALL KILOMETROS_A_MILLAS
     mov resultado_h, dx
     mov resultado_l, ax
     jmp mostrar_resultado_long
@@ -337,7 +337,7 @@ conv_lib_kg:
 conv_ton_kg:
     mov dx, valor_entrada_high
     mov ax, valor_entrada_low
-    ; Simular conversión
+    CALL TONELADAS_A_KILOS
     mov resultado_h, dx
     mov resultado_l, ax
     jmp mostrar_resultado_peso
@@ -361,7 +361,7 @@ conv_kg_lib:
 conv_kg_ton:
     mov dx, valor_entrada_high
     mov ax, valor_entrada_low
-    ; Simular conversión
+    CALL KILOS_A_TONELADAS
     mov resultado_h, dx
     mov resultado_l, ax
     jmp mostrar_resultado_peso
@@ -441,7 +441,7 @@ mostrar_resultado_long:
     mov ah, 09h
     int 21h
     
-    ; Mostrar valor original
+    ; Mostrar valor original  
     mov dx, valor_entrada_high
     mov ax, valor_entrada_low
     call MOSTRAR_RESULTADO_DECIMAL
@@ -556,7 +556,7 @@ mostrar_resultado_peso:
     mov ah, 09h
     int 21h
     
-    ; Mostrar valor original
+    ; Mostrar valor original  
     mov dx, valor_entrada_high
     mov ax, valor_entrada_low
     call MOSTRAR_RESULTADO_DECIMAL
@@ -1368,10 +1368,6 @@ CELSIUS_A_KELVIN proc near
  ; Sumar 27315 (273.15 en formato entero) al resultado (DX:AX + 27315)
     ADD AX, 27315      ; Sumar la parte baja
     ADC DX, 0          ; Ajustar parte alta si hay acarreo
-    
-    MOV CX, 10
-    IMUL CX     ;
- 
     ret
 CELSIUS_A_KELVIN endp  
 
@@ -1585,13 +1581,13 @@ KILOS_A_TONELADAS proc near
     
     ; Verificar si el número es negativo
     TEST DX, DX
-    JNS Positivo_c    ; Si no es negativo, proceder a la división
+    JNS Positivo_kgs    ; Si no es negativo, proceder a la división
 
     ; Si es negativo, convertir a positivo (complemento a 2)
     XOR DX, 0FFFFh
     NEG AX
     
-Positivo_c:
+Positivo_kgs:
     MOV CX, 100       ; Factor de precisión
     CALL Mul32x16     ; Multiplicar por 100 para manejar decimales
     
@@ -1606,13 +1602,13 @@ Positivo_c:
     
     ; Verificar si el número original era negativo
     TEST DX, DX
-    JNS Finalc        ; Si no era negativo, saltar a la suma final
+    JNS Final_kgs        ; Si no era negativo, saltar a la suma final
     
     ; Si era negativo, negar el resultado
     XOR BX, 0FFFFh  
     NEG AX
     
-Finalc:
+Final_kgs:
     MOV DX, BX        ; Restaurar DX con el signo correcto
     ret
 KILOS_A_TONELADAS endp 
