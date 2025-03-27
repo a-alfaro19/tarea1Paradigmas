@@ -1064,9 +1064,10 @@ MOSTRAR_NUMERO_GRANDE endp
 
 ; ============================================================================
 ; MOSTRAR_NUMERO_ENTERO (para 2 dígitos)
-; Descripción: Muestra números de 0-99 optimizado
+; Descripción: Muestra números de 0-99 
 ; Entrada: AX = número (0-99)
 ; ============================================================================
+
 MOSTRAR_NUMERO_ENTERO proc near
     push ax
     push dx
@@ -1077,18 +1078,26 @@ MOSTRAR_NUMERO_ENTERO proc near
     ; Dos dígitos
     mov dl, 10
     div dl          ; AL = decenas, AH = unidades
-    add al, '0'
-    mov dl, al
-    mov ah, 02h
-    int 21h
-    mov al, ah      ; Unidades
+    push ax         ; Guardar ambos dígitos (AL=decenas, AH=unidades)
     
-un_digito:          ; AH = unidades
-    add al, '0'
+    ; Mostrar decenas
     mov dl, al
+    add dl, '0'
     mov ah, 02h
     int 21h
-    mov al, ah 
+    
+    ; Mostrar unidades
+    pop ax          ; Recuperar AH=unidades
+    mov dl, ah
+    jmp mostrar_digito
+    
+un_digito:          ; AX ya contiene el número (0-9)
+    mov dl, al
+    
+mostrar_digito:
+    add dl, '0'
+    mov ah, 02h
+    int 21h
     
     pop dx
     pop ax
@@ -1240,10 +1249,10 @@ PIES_A_CENTIMETROS proc near
     
     Positivo_p:
     
-    MOV CX,  3048; Multiplicar por 3048 (DX:AX / 3048)
+    MOV CX,  61 
     CALL Mul32x16
              
-    MOV CX, 100 
+    MOV CX,  2 
     CALL Div32x16  
     
     MOV BX, DX
@@ -1331,13 +1340,10 @@ LIBRAS_A_KILOGRAMOS proc near
     
     Positivo_lb:  ;Factor de conversion  
     
-    MOV CX, 100 
-    CALL Div32x16
-     
-    MOV CX, 45404 
+    MOV CX, 227 
     CALL Mul32x16  
     
-    MOV CX, 1000 
+    MOV CX, 500 
     CALL Div32x16
     
     
@@ -1396,9 +1402,6 @@ KELVIN_A_CELSIUS endp
 ; ============================================================================
 
 YARDAS_A_CENTIMETROS proc near 
-     ; Multiplicar el valor de entrada por 91.44 (en formato entero 9144)
-    MOV DX, 9144       ; Cargar 91.44 en DX (9144 representando 91.44)
-    IMUL DX            ; AX = parte baja, DX = parte alta
     
     ; --- Manejo del signo antes de la división ---
     PUSH DX            ; Guardar DX para verificar signo después
@@ -1412,10 +1415,13 @@ YARDAS_A_CENTIMETROS proc near
     NEG AX
     
 Positivo_y:
-    ; Dividir entre 10000 (para deshacer el factor de conversión)
-    MOV CX, 10000
-    CALL Div32x16     ; Llamar a rutina de división 32x16 bits
     
+    MOV CX, 457
+    CALL Mul32x16     ; Llamar a rutina de división 32x16 bits 
+    
+    MOV CX, 5                                              
+    CALL Div32x16     ; Llamar a rutina de división 32x16 bits  
+        
     MOV BX, DX
     ; Recuperar el signo original
     POP DX           ; Recuperar DX original para verificar el signo
@@ -1533,7 +1539,7 @@ KILOMETROS_A_MILLAS endp
 ;  - SALIDA: Valor en kilogramos con dos decimales.
 ; ============================================================================ 
 TONELADAS_A_KILOS proc near 
-        ; --- Manejo del signo antes de la división ---
+     ; --- Manejo del signo antes de la división ---
     PUSH DX           ; Guardar DX para restaurar signo después
     
     ; Verificar si el número es negativo
@@ -1544,10 +1550,11 @@ TONELADAS_A_KILOS proc near
     XOR DX, 0FFFFh
     NEG AX
     
-Positivo_ton:
+Positivo_ton:  
+
+    MOV CX, 1000       
+    CALL Mul32x16      
     
-    ;Multiplicar por 1000 (DX:AX / 1000) para convertir toneladas a kilogramos
-    MOV CX, 1000      ; 1 tonelada = 1000 kilogramos    CALL Mul32x16
 
     MOV BX, DX        ; Almacenar parte alta del cociente
     
@@ -1563,7 +1570,7 @@ Positivo_ton:
     NEG AX
     
 Final_ton:
-    MOV DX, BX        ; Restaurar DX con el signo correcto
+    MOV DX, BX        ; Restaurar DX con el signo correcto 
     ret
 TONELADAS_A_KILOS endp           
 
@@ -1674,7 +1681,9 @@ CELCIUS_A_FAHRENHEIT endp
 
 FAHRENHEIT_A_CELCIUS proc near 
     
-    
+    ; RESTAR 3200 
+    SUB AX, 3200    ; Sumar la parte baja
+    SBB DX, 0        ; Ajustar parte alta si hay acarreo
     ; --- Manejo del signo antes de la división ---
     PUSH DX          ; Guardar DX (parte alta) para verificar signo despues
     
@@ -1701,7 +1710,7 @@ FAHRENHEIT_A_CELCIUS proc near
     
     ; Verificar si el numero original era negativo
     TEST BX, BX
-    JNS RestarFinal_fah   ; Si no era negativo, saltar a la suma final
+    JNS Final_fah   ; Si no era negativo, saltar a la suma final
     
     ; Si era negativo, negar el resultado
     XOR DX, 0FFFFh
@@ -1709,10 +1718,7 @@ FAHRENHEIT_A_CELCIUS proc near
 
 
     
-    RestarFinal_fah:
-    ; Sumar 3200 
-    SUB AX, 3200    ; Sumar la parte baja
-    SBB DX, 0        ; Ajustar parte alta si hay acarreo
+    Final_fah:
 
     ret                   
 FAHRENHEIT_A_CELCIUS endp 
@@ -1738,9 +1744,11 @@ PULGADAS_A_CENTIMETROS proc near
     
 Positivo_pul:  
 
-    MOV CX, 254       
+    MOV CX,127      
     CALL Mul32x16     
     
+    MOV CX, 50      
+    CALL Div32x16
 
     MOV BX, DX        ; Almacenar parte alta del cociente
     
@@ -1756,8 +1764,7 @@ Positivo_pul:
     NEG AX
     
 Final_pul:
-    MOV DX, BX        ; Restaurar DX con el signo correcto 
-    ret
+    MOV DX, BX        ; Restaurar DX con el signo correcto
     ret
 PULGADAS_A_CENTIMETROS endp 
 
@@ -1781,7 +1788,10 @@ CENTIMETROS_A_PULGADAS proc near
     NEG AX
     
 Positivo_cent:  
-
+              
+    MOV CX, 100       
+    CALL Mul32x16           
+              
     MOV CX, 254       
     CALL Div32x16     
     
@@ -1920,10 +1930,10 @@ KILOGRAMOS_A_ONZAS proc near
     
     Positivo_kilo:  ;Factor de conversion  
      
-    MOV CX, 3527 
+    MOV CX, 882 
     CALL Mul32x16  
     
-    MOV CX, 100 
+    MOV CX, 25 
     CALL Div32x16
     
     
