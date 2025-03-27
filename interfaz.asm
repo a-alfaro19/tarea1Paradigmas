@@ -225,7 +225,7 @@ error_entrada:
 conv_fahr_cel:
     mov dx, valor_entrada_high
     mov ax, valor_entrada_low
-    ; Simular conversión (solo para interfaz)
+    CALL FAHRENHEIT_A_CELCIUS
     mov resultado_h, dx
     mov resultado_l, ax
     jmp mostrar_resultado_temp
@@ -257,7 +257,7 @@ conv_fahr_kel:
 conv_pulg_cm:
     mov dx, valor_entrada_high
     mov ax, valor_entrada_low
-    ; Simular conversión
+    CALL PULGADAS_A_CENTIMETROS
     mov resultado_h, dx
     mov resultado_l, ax
     jmp mostrar_resultado_long
@@ -281,7 +281,7 @@ conv_yard_cm:
 conv_millas_km:
     mov dx, valor_entrada_high
     mov ax, valor_entrada_low
-    ; Simular conversión
+    CALL MILLAS_A_KILOMETROS
     mov resultado_h, dx
     mov resultado_l, ax
     jmp mostrar_resultado_long
@@ -289,7 +289,7 @@ conv_millas_km:
 conv_cm_pulg:
     mov dx, valor_entrada_high
     mov ax, valor_entrada_low
-    ; Simular conversión
+    CALL CENTIMETROS_A_PULGADAS
     mov resultado_h, dx
     mov resultado_l, ax
     jmp mostrar_resultado_long
@@ -321,7 +321,7 @@ conv_km_millas:
 conv_onz_kg:
     mov dx, valor_entrada_high
     mov ax, valor_entrada_low
-    ; Simular conversión
+    CALL ONZAS_A_KILOGRAMOS
     mov resultado_h, dx
     mov resultado_l, ax
     jmp mostrar_resultado_peso
@@ -345,7 +345,7 @@ conv_ton_kg:
 conv_kg_onz:
     mov dx, valor_entrada_high
     mov ax, valor_entrada_low
-    ; Simular conversión
+    CALL KILOGRAMOS_A_ONZAS
     mov resultado_h, dx
     mov resultado_l, ax
     jmp mostrar_resultado_peso
@@ -947,9 +947,11 @@ MOSTRAR_RESULTADO_DECIMAL proc near
     pop dx
     pop ax
     
-    xor dx, 0FFFFh
-    neg ax
-    sbb dx, 0
+    ; Corrección: Convertir correctamente el número negativo a positivo
+    not dx                  ; Complemento a 1 de la parte alta
+    neg ax                  ; Negar la parte baja
+    cmc                     ; Complementar el carry flag
+    adc dx, 0               ; Ajustar la parte alta si hubo acarreo
     
 positivo_rd_fix:
     ; Separar parte entera y decimal (dividir por 100)
@@ -980,9 +982,9 @@ positivo_rd_fix:
     jz mostrar_parte_baja
     
     ; Si DX > 0, mostrar primero la parte alta
-    call MOSTRAR_NUMERO_GRANDE  ; Mostrar DX
-    mov ax, dx
-    call MOSTRAR_NUMERO_GRANDE  ; Mostrar AX
+    xchg ax, dx      ; Intercambiar para mostrar DX primero
+    call MOSTRAR_NUMERO_GRANDE  ; Mostrar DX (parte alta)
+    xchg ax, dx      ; Restaurar valores
     
 mostrar_parte_baja:
     call MOSTRAR_NUMERO_GRANDE  ; Mostrar AX (parte baja)
@@ -1497,15 +1499,13 @@ KILOMETROS_A_MILLAS proc near
     
 Positivo_km:  
 
-    MOV CX, 1000       ; Factor de precisión
-    CALL Mul32x16     ; Multiplicar por 100 para manejar decimales
+    MOV CX, 215       
+    CALL Mul32x16      
     
-    ; Dividir entre 16129 (DX:AX / 16129) ya que 1 kilómetro = 0.621371 millas
-    MOV CX, 16129     ; 0.621371 como número entero (para mayor precisión, usamos 16129)
+    ; Dividir entre 346 (DX:AX /346) ya que 1 kilómetro = 0.16093 millas
+    MOV CX, 346     
     CALL Div32x16  
     
-    MOV CX, 10       ; Factor de precisión
-    CALL Mul32x16     ; Multiplicar por 100 para manejar decimales
 
     MOV BX, DX        ; Almacenar parte alta del cociente
     
@@ -1547,8 +1547,7 @@ TONELADAS_A_KILOS proc near
 Positivo_ton:
     
     ;Multiplicar por 1000 (DX:AX / 1000) para convertir toneladas a kilogramos
-    MOV CX, 1000      ; 1 tonelada = 1000 kilogramos
-    CALL Mul32x16
+    MOV CX, 1000      ; 1 tonelada = 1000 kilogramos    CALL Mul32x16
 
     MOV BX, DX        ; Almacenar parte alta del cociente
     
@@ -1610,7 +1609,340 @@ Positivo_kgs:
 Final_kgs:
     MOV DX, BX        ; Restaurar DX con el signo correcto
     ret
-KILOS_A_TONELADAS endp 
+KILOS_A_TONELADAS endp   
+
+; ============================================================================
+; Macro: CELCIUS_A_FAHRENHEIT
+; Descripción: Convierte una temperatura en grados Celsius a Fahrenheit.
+; Parámetros:
+;   - ENTRADA: Variable de entrada (temperatura en Celsius)
+;   - SALIDA: Variable de salida (temperatura en Fahrenheit)
+; ============================================================================
+
+CELCIUS_A_FAHRENHEIT proc near 
+    
+    
+    ; --- Manejo del signo antes de la división ---
+    PUSH DX          ; Guardar DX (parte alta) para verificar signo despues
+    
+    ; Verificar si el numero es negativo (comprobar bit de signo en DX)
+    TEST DX, DX
+    JNS Positivo1a  ; Si no es negativo (SF=0), saltar a division
+    
+    ; Si es negativo, convertir a positivo (complemento a 2)
+    XOR DX, 0FFFFh
+    NEG AX
+    
+    Positivo1a:
+    
+    ; Multiplicar por 9 (DX:AX * 9) 
+    MOV CX, 9
+    CALL Mul32x16     ; Llamar a rutina de multiplicacion 32x16 bits
+    
+    ; Dividir entre 5 (DX:AX / 5)
+    MOV CX, 5 
+    CALL Div32x16     ; Ahora dividimos un numero positivo
+    
+    ; Recuperar el signo original
+    POP BX           ; Recuperar DX original para verificar el signo
+    
+    ; Verificar si el numero original era negativo
+    TEST BX, BX
+    JNS SumarFinal_cel   ; Si no era negativo, saltar a la suma final
+    
+    ; Si era negativo, negar el resultado
+    XOR DX, 0FFFFh
+    NEG AX
+
+
+    
+    SumarFinal_cel:
+    ; Sumar 3200 
+    ADD AX, 3200    ; Sumar la parte baja
+    ADC DX, 0        ; Ajustar parte alta si hay acarreo
+
+    ret                   
+CELCIUS_A_FAHRENHEIT endp      
+
+; ============================================================================
+; Macro: FAHRENHEIT_A_CELCIUS
+; Descripción: Convierte una temperatura en grados Fahrenheit a Celsius.
+; Parámetros:
+;   - ENTRADA: Variable de entrada (temperatura en Fahrenheit)
+;   - SALIDA: Variable de salida (temperatura en Celsius)
+; ============================================================================
+
+FAHRENHEIT_A_CELCIUS proc near 
+    
+    
+    ; --- Manejo del signo antes de la división ---
+    PUSH DX          ; Guardar DX (parte alta) para verificar signo despues
+    
+    ; Verificar si el numero es negativo (comprobar bit de signo en DX)
+    TEST DX, DX
+    JNS Positivo2  ; Si no es negativo (SF=0), saltar a division
+    
+    ; Si es negativo, convertir a positivo (complemento a 2)
+    XOR DX, 0FFFFh
+    NEG AX
+    
+    Positivo2:
+    
+    ; Multiplicar por 5 (DX:AX * 5) 
+    MOV CX, 5
+    CALL Mul32x16     ; Llamar a rutina de multiplicacion 32x16 bits
+    
+    ; Dividir entre 9 (DX:AX / 9)
+    MOV CX, 9 
+    CALL Div32x16     ; Ahora dividimos un numero positivo
+    
+    ; Recuperar el signo original
+    POP BX           ; Recuperar DX original para verificar el signo
+    
+    ; Verificar si el numero original era negativo
+    TEST BX, BX
+    JNS RestarFinal_fah   ; Si no era negativo, saltar a la suma final
+    
+    ; Si era negativo, negar el resultado
+    XOR DX, 0FFFFh
+    NEG AX
+
+
+    
+    RestarFinal_fah:
+    ; Sumar 3200 
+    SUB AX, 3200    ; Sumar la parte baja
+    SBB DX, 0        ; Ajustar parte alta si hay acarreo
+
+    ret                   
+FAHRENHEIT_A_CELCIUS endp 
+
+; ============================================================================
+; Macro: PULGADAS_A_CENTIMETROS
+; Descripción: Convierte una longitud en pulgadas a centímetros.
+; Parámetros:
+;   - ENTRADA: Variable de entrada (longitud en pulgadas)
+;   - SALIDA: Variable de salida (longitud en centímetros)
+; ============================================================================
+PULGADAS_A_CENTIMETROS proc near  
+     ; --- Manejo del signo antes de la división ---
+    PUSH DX           ; Guardar DX para restaurar signo después
+    
+    ; Verificar si el número es negativo
+    TEST DX, DX
+    JNS Positivo_pul    ; Si no es negativo, proceder a la división
+
+    ; Si es negativo, convertir a positivo (complemento a 2)
+    XOR DX, 0FFFFh
+    NEG AX
+    
+Positivo_pul:  
+
+    MOV CX, 254       
+    CALL Mul32x16     
+    
+
+    MOV BX, DX        ; Almacenar parte alta del cociente
+    
+    ; Recuperar el signo original
+    POP DX            ; Restaurar DX original para verificar el signo
+    
+    ; Verificar si el número original era negativo
+    TEST DX, DX
+    JNS Final_pul        ; Si no era negativo, saltar a la suma final
+    
+    ; Si era negativo, negar el resultado
+    XOR BX, 0FFFFh  
+    NEG AX
+    
+Final_pul:
+    MOV DX, BX        ; Restaurar DX con el signo correcto 
+    ret
+    ret
+PULGADAS_A_CENTIMETROS endp 
+
+; ============================================================================
+; Macro: CENTIMETROS_A_PULGADAS
+; Descripción: Convierte una longitud en centímetros a pulgadas.
+; Parámetros:
+;   - ENTRADA: Variable de entrada (longitud en centímetros)
+;   - SALIDA: Variable de salida (longitud en pulgadas)
+; ============================================================================
+CENTIMETROS_A_PULGADAS proc near  
+     ; --- Manejo del signo antes de la división ---
+    PUSH DX           ; Guardar DX para restaurar signo después
+    
+    ; Verificar si el número es negativo
+    TEST DX, DX
+    JNS Positivo_cent    ; Si no es negativo, proceder a la división
+
+    ; Si es negativo, convertir a positivo (complemento a 2)
+    XOR DX, 0FFFFh
+    NEG AX
+    
+Positivo_cent:  
+
+    MOV CX, 254       
+    CALL Div32x16     
+    
+
+    MOV BX, DX        ; Almacenar parte alta del cociente
+    
+    ; Recuperar el signo original
+    POP DX            ; Restaurar DX original para verificar el signo
+    
+    ; Verificar si el número original era negativo
+    TEST DX, DX
+    JNS Final_cent        ; Si no era negativo, saltar a la suma final
+    
+    ; Si era negativo, negar el resultado
+    XOR BX, 0FFFFh  
+    NEG AX
+    
+Final_cent:
+    MOV DX, BX        ; Restaurar DX con el signo correcto 
+    ret
+    ret
+CENTIMETROS_A_PULGADAS endp     
+
+
+; ============================================================================ 
+; Macro: MILLAS_A_KILOMETROS
+; Descripción: Convierte una distancia en millas a kilómetros.
+; Parámetros:
+;  - ENTRADA: Variable de entrada (distancia en millas)
+;  - SALIDA: Variable de salida (distancia en kilómetros)
+; ============================================================================ 
+MILLAS_A_KILOMETROS proc near
+     ; --- Manejo del signo antes de la división ---
+    PUSH DX           ; Guardar DX para restaurar signo después
+    
+    ; Verificar si el número es negativo
+    TEST DX, DX
+    JNS Positivo_millas    ; Si no es negativo, proceder a la división
+
+    ; Si es negativo, convertir a positivo (complemento a 2)
+    XOR DX, 0FFFFh
+    NEG AX
+    
+Positivo_millas:  
+
+    MOV CX, 346       ; Factor de precisión
+    CALL Mul32x16     
+    
+    ; Dividir entre 215 (DX:AX / 215) 
+    MOV CX, 215     
+    CALL Div32x16  
+        
+
+    MOV BX, DX        ; Almacenar parte alta del cociente
+    
+    ; Recuperar el signo original
+    POP DX            ; Restaurar DX original para verificar el signo
+    
+    ; Verificar si el número original era negativo
+    TEST DX, DX
+    JNS Final_millas        ; Si no era negativo, saltar a la suma final
+    
+    ; Si era negativo, negar el resultado
+    XOR BX, 0FFFFh  
+    NEG AX
+    
+Final_millas:
+    MOV DX, BX        ; Restaurar DX con el signo correcto 
+    ret
+MILLAS_A_KILOMETROS endp
+
+
+; ============================================================================
+; Macro: ONZAS_A_KILOGRAMOS
+; Descripción: Convierte un peso en onzas a kilogramos.
+; Parámetros:
+;  - ENTRADA: Variable de entrada (peso en onzas)
+;  - SALIDA: Variable de salida (peso en kilogramos)
+; ============================================================================
+ONZAS_A_KILOGRAMOS proc near
+    ; --- Manejo del signo antes de la división ---
+    PUSH DX          ; Guardar DX (parte alta) para verificar signo despues
+    
+    ; Verificar si el numero es negativo (comprobar bit de signo en DX)
+    TEST DX, DX
+    JNS Positivo_on  ; Si no es negativo (SF=0), saltar a division
+    
+    ; Si es negativo, convertir a positivo (complemento a 2)
+    XOR DX, 0FFFFh
+    NEG AX
+    
+    Positivo_on:  ;Factor de conversion  
+     
+    MOV CX, 100 
+    CALL Mul32x16  
+    
+    MOV CX, 3527 
+    CALL Div32x16
+    
+    
+    MOV BX, DX
+    ; Recuperar el signo original
+    POP DX           ; Recuperar DX original para verificar el signo
+    
+    ; Verificar si el numero original era negativo
+    TEST DX, DX
+    JNS Final_on   ; Si no era negativo, saltar a la suma final
+    
+    ; Si era negativo, negar el resultado
+    XOR BX, 0FFFFh  
+    NEG AX
+    
+    Final_on:
+    MOV DX, BX
+    ret
+ONZAS_A_KILOGRAMOS endp 
+
+; ============================================================================
+; Macro: KILOGRAMOS_A_ONZAS
+; Descripción: Convierte un peso en kilogramos a onzas.
+; Parámetros:
+;  - ENTRADA: Variable de entrada (peso en kilogramos)
+;  - SALIDA: Variable de salida (peso en onzas)
+; ============================================================================
+KILOGRAMOS_A_ONZAS proc near
+    ; --- Manejo del signo antes de la división ---
+    PUSH DX          ; Guardar DX (parte alta) para verificar signo despues
+    
+    ; Verificar si el numero es negativo (comprobar bit de signo en DX)
+    TEST DX, DX
+    JNS Positivo_kilo  ; Si no es negativo (SF=0), saltar a division
+    
+    ; Si es negativo, convertir a positivo (complemento a 2)
+    XOR DX, 0FFFFh
+    NEG AX
+    
+    Positivo_kilo:  ;Factor de conversion  
+     
+    MOV CX, 3527 
+    CALL Mul32x16  
+    
+    MOV CX, 100 
+    CALL Div32x16
+    
+    
+    MOV BX, DX
+    ; Recuperar el signo original
+    POP DX           ; Recuperar DX original para verificar el signo
+    
+    ; Verificar si el numero original era negativo
+    TEST DX, DX
+    JNS Final_kilo ; Si no era negativo, saltar a la suma final
+    
+    ; Si era negativo, negar el resultado
+    XOR BX, 0FFFFh  
+    NEG AX
+    
+    Final_kilo:
+    MOV DX, BX
+    ret
+KILOGRAMOS_A_ONZAS endp 
 
 ; ============================================================================
 ; Rutina: Mul32x16
