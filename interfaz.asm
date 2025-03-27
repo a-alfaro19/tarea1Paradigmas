@@ -1495,13 +1495,17 @@ KILOMETROS_A_MILLAS proc near
     XOR DX, 0FFFFh
     NEG AX
     
-Positivo_km:
-    MOV CX, 100       ; Factor de precisión
+Positivo_km:  
+
+    MOV CX, 1000       ; Factor de precisión
     CALL Mul32x16     ; Multiplicar por 100 para manejar decimales
     
     ; Dividir entre 16129 (DX:AX / 16129) ya que 1 kilómetro = 0.621371 millas
     MOV CX, 16129     ; 0.621371 como número entero (para mayor precisión, usamos 16129)
-    CALL Div32x16
+    CALL Div32x16  
+    
+    MOV CX, 10       ; Factor de precisión
+    CALL Mul32x16     ; Multiplicar por 100 para manejar decimales
 
     MOV BX, DX        ; Almacenar parte alta del cociente
     
@@ -1541,12 +1545,10 @@ TONELADAS_A_KILOS proc near
     NEG AX
     
 Positivo_ton:
-    MOV CX, 100       ; Factor de precisión
-    CALL Mul32x16     ; Multiplicar por 100 para manejar decimales
     
-    ; Dividir entre 1000 (DX:AX / 1000) para convertir toneladas a kilogramos
+    ;Multiplicar por 1000 (DX:AX / 1000) para convertir toneladas a kilogramos
     MOV CX, 1000      ; 1 tonelada = 1000 kilogramos
-    CALL Div32x16
+    CALL Mul32x16
 
     MOV BX, DX        ; Almacenar parte alta del cociente
     
@@ -1588,9 +1590,6 @@ KILOS_A_TONELADAS proc near
     NEG AX
     
 Positivo_kgs:
-    MOV CX, 100       ; Factor de precisión
-    CALL Mul32x16     ; Multiplicar por 100 para manejar decimales
-    
     ; Dividir entre 1000 (DX:AX / 1000) para convertir kilogramos a toneladas
     MOV CX, 1000      ; 1000 kilogramos = 1 tonelada
     CALL Div32x16
