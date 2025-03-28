@@ -929,7 +929,7 @@ CLEAR_SCREEN endp
 ; MOSTRAR_RESULTADO_DECIMAL
 ; Descripción: Muestra números decimales manejando correctamente la parte fraccionaria
 ; Entrada:
-;   - resultado_h:resultado_l = número en formato x100 (32 bits con signo)
+;   - DX:AX = número en formato x100 (32 bits con signo)
 ; ============================================================================
 MOSTRAR_RESULTADO_DECIMAL proc near
     pusha                   ; Guardamos todos los registros
@@ -947,47 +947,38 @@ MOSTRAR_RESULTADO_DECIMAL proc near
     pop dx
     pop ax
     
-    ; Corrección: Convertir correctamente el número negativo a positivo
+    ; Convertir correctamente el número negativo a positivo (32 bits)
     not dx                  ; Complemento a 1 de la parte alta
     neg ax                  ; Negar la parte baja
     cmc                     ; Complementar el carry flag
     adc dx, 0               ; Ajustar la parte alta si hubo acarreo
     
 positivo_rd_fix:
-    ; Separar parte entera y decimal (dividir por 100)
+    ; Separar parte entera y decimal (dividir por 100) para 32 bits
     mov bx, 100
-    push ax          ; Guardar parte baja
+    push ax                 ; Guardar parte baja
     
     ; Primero dividir la parte alta (DX)
     mov ax, dx
-    xor dx, dx       ; DX:AX = parte alta extendida a 32 bits
-    div bx           ; AX = cociente alto, DX = residuo alto
+    xor dx, dx              ; DX:AX = parte alta extendida a 32 bits
+    div bx                  ; AX = cociente alto, DX = residuo alto
     
     ; Combinar residuo alto (DX) con parte baja (AX)
-    mov cx, dx       ; Guardar residuo alto
-    pop dx           ; Recuperar parte baja original
-    push ax          ; Guardar cociente alto
+    mov cx, dx              ; Guardar residuo alto
+    pop dx                  ; Recuperar parte baja original
+    push ax                 ; Guardar cociente alto
     
     ; Dividir (residuo alto:parte baja) / 100
     mov ax, dx
     mov dx, cx
-    div bx           ; AX = cociente bajo, DX = parte decimal (0-99)
+    div bx                  ; AX = cociente bajo, DX = parte decimal (0-99)
     
-    ; Combinar resultados
-    mov cx, dx       ; CX = parte decimal
-    pop dx           ; DX = cociente alto
+    ; Combinar resultados (DX:AX ahora contiene la parte entera)
+    mov cx, dx              ; CX = parte decimal (0-99)
+    pop dx                  ; DX = cociente alto
     
-    ; Mostrar parte entera (DX:AX)
-    or dx, dx
-    jz mostrar_parte_baja
-    
-    ; Si DX > 0, mostrar primero la parte alta
-    xchg ax, dx      ; Intercambiar para mostrar DX primero
-    call MOSTRAR_NUMERO_GRANDE  ; Mostrar DX (parte alta)
-    xchg ax, dx      ; Restaurar valores
-    
-mostrar_parte_baja:
-    call MOSTRAR_NUMERO_GRANDE  ; Mostrar AX (parte baja)
+    ; Mostrar parte entera como número de 32 bits (DX:AX)
+    call MOSTRAR_NUMERO_32BITS
     
     ; Mostrar punto decimal
     mov ah, 02h
@@ -995,7 +986,7 @@ mostrar_parte_baja:
     int 21h
     
     ; Mostrar parte decimal (siempre 2 dígitos)
-    mov ax, cx       ; Parte decimal (0-99)
+    mov ax, cx              ; Parte decimal (0-99)
     cmp ax, 10
     jae mostrar_decimal_fix
     
@@ -1014,6 +1005,70 @@ fin_mostrar_rd_fix:
     ret
 MOSTRAR_RESULTADO_DECIMAL endp
 
+; ============================================================================
+; MOSTRAR_NUMERO_32BITS
+; Descripción: Muestra números de 32 bits (0-4294967295)
+; Entrada: DX:AX = número a mostrar (DX parte alta, AX parte baja)
+; ============================================================================
+MOSTRAR_NUMERO_32BITS proc near
+    push ax
+    push bx
+    push cx
+    push dx
+    push si
+    push di
+    
+    ; Caso especial para cero
+    mov cx, dx
+    or cx, ax
+    jnz no_cero_32bits
+    mov dl, '0'
+    mov ah, 02h
+    int 21h
+    jmp fin_num_32bits
+    
+no_cero_32bits:
+    ; Usar pila para almacenar dígitos
+    mov si, 0          ; Contador de dígitos
+    mov bx, 10
+    
+    ; DX:AX contiene el número de 32 bits
+extraer_digitos_32bits:
+    ; Dividir DX:AX por 10 (BX=10)
+    push ax            ; Guardar parte baja
+    mov ax, dx
+    xor dx, dx
+    div bx             ; DX:AX / BX
+    mov di, ax         ; DI = cociente alto
+    pop ax             ; Recuperar parte baja
+    div bx             ; AX = cociente bajo, DX = dígito (0-9)
+    
+    push dx            ; Guardar dígito
+    inc si
+    
+    ; Combinar cocientes: DI:AX
+    mov dx, di
+    or di, ax          ; Verificar si hemos terminado
+    jnz extraer_digitos_32bits
+    
+    ; Mostrar dígitos
+mostrar_digitos_32bits:
+    pop dx
+    add dl, '0'        ; Convertir a ASCII
+    mov ah, 02h
+    int 21h
+    dec si
+    jnz mostrar_digitos_32bits
+    
+fin_num_32bits:
+    pop di
+    pop si
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+MOSTRAR_NUMERO_32BITS endp
 ; ============================================================================
 ; MOSTRAR_NUMERO_GRANDE (optimizada)
 ; Descripción: Muestra números de 16 bits (0-65535)
@@ -1930,10 +1985,10 @@ KILOGRAMOS_A_ONZAS proc near
     
     Positivo_kilo:  ;Factor de conversion  
      
-    MOV CX, 882 
+    MOV CX, 3527 
     CALL Mul32x16  
     
-    MOV CX, 25 
+    MOV CX, 100 
     CALL Div32x16
     
     
