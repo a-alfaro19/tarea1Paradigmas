@@ -1249,10 +1249,10 @@ PIES_A_CENTIMETROS proc near
     
     Positivo_p:
     
-    MOV CX,  61 
+    MOV CX,  3048 
     CALL Mul32x16
              
-    MOV CX,  2 
+    MOV CX,  100 
     CALL Div32x16  
     
     MOV BX, DX
@@ -1744,7 +1744,7 @@ PULGADAS_A_CENTIMETROS proc near
     
 Positivo_pul:  
 
-    MOV CX,127      
+    MOV CX,127     ;Factor de conversion 1 pulgada = 2.54 cm 
     CALL Mul32x16     
     
     MOV CX, 50      
@@ -1792,7 +1792,7 @@ Positivo_cent:
     MOV CX, 100       
     CALL Mul32x16           
               
-    MOV CX, 254       
+    MOV CX, 254       ;Factor de conversion 0,3937 pulgada = 1 cm 
     CALL Div32x16     
     
 
@@ -1837,7 +1837,7 @@ MILLAS_A_KILOMETROS proc near
     
 Positivo_millas:  
 
-    MOV CX, 346       ; Factor de precisión
+    MOV CX, 346       ; Factor de conversion 1milla = 1.6093
     CALL Mul32x16     
     
     ; Dividir entre 215 (DX:AX / 215) 
@@ -1883,7 +1883,7 @@ ONZAS_A_KILOGRAMOS proc near
     XOR DX, 0FFFFh
     NEG AX
     
-    Positivo_on:  ;Factor de conversion  
+    Positivo_on:  ;Factor de conversion 1onza = 0,02835 kg   
      
     MOV CX, 100 
     CALL Mul32x16  
