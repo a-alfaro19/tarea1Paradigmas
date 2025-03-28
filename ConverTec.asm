@@ -1,5 +1,4 @@
 ; Programa principal ConverTec
-; Interfaz completa para todas las conversiones
 
 include 'emu8086.inc'
 
@@ -927,7 +926,7 @@ CLEAR_SCREEN proc near
 CLEAR_SCREEN endp 
 ; ============================================================================
 ; MOSTRAR_RESULTADO_DECIMAL
-; Descripción: Muestra números decimales manejando correctamente la parte fraccionaria
+; Descripción: Muestra números decimales manejando la parte fraccionaria
 ; Entrada:
 ;   - DX:AX = número en formato x100 (32 bits con signo)
 ; ============================================================================
@@ -1304,7 +1303,7 @@ PIES_A_CENTIMETROS proc near
     
     Positivo_p:
     
-    MOV CX,  3048 
+    MOV CX,  3048         ;Factor de conversion 1ft=30.48cm
     CALL Mul32x16
              
     MOV CX,  100 
@@ -1608,7 +1607,7 @@ TONELADAS_A_KILOS proc near
     
 Positivo_ton:  
 
-    MOV CX, 1000       
+    MOV CX, 1000               ;Factor de conversion: 1 ton = 1000 kg
     CALL Mul32x16      
     
 
